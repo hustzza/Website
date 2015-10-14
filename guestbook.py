@@ -17,6 +17,8 @@
 import cgi
 import datetime
 import webapp2
+import urllib2
+import re
 
 from google.appengine.ext import ndb
 from google.appengine.api import users
@@ -33,11 +35,18 @@ class MainPage(webapp2.RequestHandler):
   def get(self):
     self.response.out.write('<html><body>')
 
+    url = "http://www.meijutt.com/content/meiju20195.html"
+    pp = urllib2.urlopen(url)
+    content = pp.read()
+    content = content.decode('GBK')
+    results = re.findall('ed2k://\|file\|.*?down', content, flags=0)
     greetings = ndb.gql('SELECT * '
                         'FROM Greeting '
                         'WHERE ANCESTOR IS :1 '
                         'ORDER BY date DESC LIMIT 10',
                         guestbook_key)
+    for result in results:
+	    self.response.out.write('<b>%s</b>:'% result)
 
     for greeting in greetings:
       if greeting.author:
